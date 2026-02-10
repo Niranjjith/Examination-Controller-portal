@@ -6,19 +6,15 @@
   font-family: "Segoe UI", system-ui, sans-serif;
 }
 
-/* PREVENT SCROLL */
-html,
-body {
-  height: 100%;
-}
-
 /* MAIN WRAPPER */
 .home {
-  height: calc(100vh - 70px); /* navbar height */
+  min-height: 100vh; /* fill screen height */
+  padding-top: 70px; /* account for fixed navbar */
   background: linear-gradient(180deg, #1e3a8a, #2563eb);
   color: white;
   display: flex;
   flex-direction: column;
+  align-items: stretch;
 }
 
 /* HERO SECTION */
@@ -30,6 +26,9 @@ body {
   justify-content: center;
   text-align: center;
   padding: 20px;
+  opacity: 0;
+  transform: translateY(18px);
+  animation: hero-fade-up 0.8s ease-out 0.1s forwards;
 }
 
 .hero h1 {
@@ -47,6 +46,8 @@ body {
 .hero-buttons {
   display: flex;
   gap: 18px;
+  align-items: center;
+  justify-content: center;
 }
 
 .btn-primary {
@@ -71,57 +72,154 @@ body {
 /* QUICK ACCESS – PREMIUM CARD */
 .quick-access {
   flex: 1;
-  margin: 0 60px 30px;
-  padding: 28px 40px 34px;
-  background: rgba(255, 255, 255, 0.14);
-  backdrop-filter: blur(10px);
-  border-radius: 22px;
-  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
+  max-width: 1160px;
+  margin: 0 auto 30px;
+  padding: 22px 30px 28px;
+  background: radial-gradient(circle at top left, rgba(248, 250, 252, 0.12), transparent),
+    rgba(15, 23, 42, 0.7);
+  backdrop-filter: blur(18px);
+  border-radius: 24px;
+  border: 1px solid rgba(148, 163, 184, 0.55);
+  box-shadow: 0 22px 48px rgba(15, 23, 42, 0.65);
+  opacity: 0;
+  transform: translateY(22px);
+  animation: section-fade-up 0.85s ease-out 0.25s forwards;
 }
 
-.quick-access h2 {
-  text-align: center;
-  margin-bottom: 22px;
+.quick-access-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 18px;
+}
+
+.quick-access-title {
   font-size: 22px;
   font-weight: 600;
-  letter-spacing: 0.4px;
+  letter-spacing: 0.04em;
+}
+
+.quick-access-subtitle {
+  margin-top: 4px;
+  font-size: 13.5px;
+  color: #e5e7eb;
+  opacity: 0.9;
 }
 
 /* CARD GRID */
 .cards {
-  height: calc(100% - 44px);
   display: grid;
-  grid-template-columns: repeat(4, 1fr);
+  grid-template-columns: repeat(4, minmax(0, 1fr));
   gap: 22px;
 }
 
 /* INDIVIDUAL CARD */
 .card {
-  background: rgba(255, 255, 255, 0.18);
+  background: rgba(15, 23, 42, 0.9);
   border-radius: 18px;
+  padding: 18px 16px 16px;
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
   gap: 10px;
-
-  font-size: 16px;
-  font-weight: 500;
-  letter-spacing: 0.2px;
   text-align: center;
-
   cursor: pointer;
-  transition: all 0.25s ease;
+  transition: transform 0.25s ease, box-shadow 0.25s ease,
+    background 0.25s ease, border-color 0.25s ease;
+  border: 1px solid rgba(148, 163, 184, 0.45);
 }
 
 /* ICON */
-.card .icon {
-  font-size: 30px;
+.card-icon {
+  width: 44px;
+  height: 44px;
+  border-radius: 999px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 22px;
+  background: radial-gradient(circle at 30% 0%, #dbeafe, #60a5fa);
+  color: #1e3a8a;
+}
+
+.card-label {
+  font-size: 15px;
+  font-weight: 600;
+  letter-spacing: 0.02em;
 }
 
 /* HOVER – SUBTLE, NOT FLASHY */
 .card:hover {
-  transform: translateY(-6px);
-  background: rgba(255, 255, 255, 0.28);
-  box-shadow: 0 12px 24px rgba(0, 0, 0, 0.2);
+  transform: translateY(-4px);
+  background: rgba(15, 23, 42, 0.98);
+  border-color: #60a5fa;
+  box-shadow: 0 14px 28px rgba(15, 23, 42, 0.7);
+}
+
+/* ANIMATIONS */
+@keyframes hero-fade-up {
+  from {
+    opacity: 0;
+    transform: translateY(30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes section-fade-up {
+  from {
+    opacity: 0;
+    transform: translateY(30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* RESPONSIVE LAYOUT */
+@media (max-width: 1024px) {
+  .hero h1 {
+    font-size: 38px;
+  }
+
+  .quick-access {
+    margin: 0 32px 26px;
+    padding: 20px 22px 24px;
+  }
+
+  .cards {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 640px) {
+  .hero {
+    padding-top: 20px;
+  }
+
+  .hero h1 {
+    font-size: 30px;
+  }
+
+  .hero p {
+    font-size: 16px;
+  }
+
+  .hero-buttons {
+    flex-direction: column;
+    gap: 12px;
+  }
+
+  .quick-access {
+    margin: 0 18px 22px;
+    padding: 16px 14px 20px;
+  }
+
+  .cards {
+    grid-template-columns: 1fr;
+  }
 }

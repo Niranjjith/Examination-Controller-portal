@@ -1,5 +1,7 @@
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import Index from "./pages/Index";
+import About from "./pages/About";
+import StudentServices from "./pages/StudentServices";
 import Login from "./pages/auth/Login";
 import AdminDashboard from "./pages/admin/Dashboard";
 import Exams from "./pages/admin/Exams";
@@ -14,6 +16,8 @@ export default function App() {
 
         {/* Public */}
         <Route path="/" element={<Index />} />
+        <Route path="/about" element={<About />} />
+        <Route path="/services" element={<StudentServices />} />
         <Route path="/login" element={<Login />} />
 
         {/* Admin */}

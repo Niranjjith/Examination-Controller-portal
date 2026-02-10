@@ -24,27 +24,34 @@ export default function Index() {
 
         {/* QUICK ACCESS */}
         <section className="quick-access">
-          <h2>Student Quick Access</h2>
+          <div className="quick-access-header">
+            <div>
+              <h2 className="quick-access-title">Student Quick Access</h2>
+              <p className="quick-access-subtitle">
+                Quickly reach important examination services and updates.
+              </p>
+            </div>
+          </div>
 
           <div className="cards">
             <div className="card">
-              <span className="icon">📅</span>
-              <span>Exam Timetable</span>
+              <div className="card-icon">📅</div>
+              <div className="card-label">Exam Timetable</div>
             </div>
 
             <div className="card">
-              <span className="icon">🎫</span>
-              <span>Hall Ticket</span>
+              <div className="card-icon">🎫</div>
+              <div className="card-label">Hall Ticket</div>
             </div>
 
             <div className="card">
-              <span className="icon">🏆</span>
-              <span>Results</span>
+              <div className="card-icon">🏆</div>
+              <div className="card-label">Results</div>
             </div>
 
             <div className="card">
-              <span className="icon">🔄</span>
-              <span>Revaluation Status</span>
+              <div className="card-icon">🔄</div>
+              <div className="card-label">Revaluation Status</div>
             </div>
           </div>
         </section>

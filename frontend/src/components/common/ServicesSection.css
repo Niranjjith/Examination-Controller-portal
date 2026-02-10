@@ -1,6 +1,9 @@
 .services-section {
-  padding: 70px 80px;
+  padding: 80px 80px;
   background: #f8fafc;
+  opacity: 0;
+  transform: translateY(24px);
+  animation: section-fade-up 0.9s ease-out 0.1s forwards;
 }
 
 .services-section h2 {
@@ -74,4 +77,37 @@
 
 .link:hover {
   text-decoration: underline;
+}
+
+/* ANIMATIONS */
+@keyframes section-fade-up {
+  from {
+    opacity: 0;
+    transform: translateY(30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* RESPONSIVE */
+@media (max-width: 1024px) {
+  .services-section {
+    padding: 70px 40px;
+  }
+
+  .services-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 640px) {
+  .services-section {
+    padding: 60px 20px;
+  }
+
+  .services-grid {
+    grid-template-columns: 1fr;
+  }
 }

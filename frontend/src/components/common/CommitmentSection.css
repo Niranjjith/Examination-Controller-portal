@@ -11,6 +11,9 @@
    =============================== */
 .commitment-section {
   padding: 80px 90px 60px;
+  opacity: 0;
+  transform: translateY(24px);
+  animation: commitment-fade-up 0.9s ease-out 0.1s forwards;
 }
 
 .commitment-section h2 {
@@ -102,4 +105,47 @@
 /* HIGHLIGHTED STATS */
 .stat.highlight h4 {
   color: #f59e0b;
+}
+
+/* ANIMATIONS */
+@keyframes commitment-fade-up {
+  from {
+    opacity: 0;
+    transform: translateY(30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* RESPONSIVE */
+@media (max-width: 1024px) {
+  .commitment-section {
+    padding: 70px 40px 50px;
+  }
+
+  .commitment-cards {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .stats-bar {
+    padding: 32px 40px;
+    gap: 40px;
+  }
+}
+
+@media (max-width: 640px) {
+  .commitment-section {
+    padding: 60px 20px 40px;
+  }
+
+  .commitment-cards {
+    grid-template-columns: 1fr;
+  }
+
+  .stats-bar {
+    padding: 28px 20px;
+    gap: 30px;
+  }
 }
