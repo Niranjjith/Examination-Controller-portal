@@ -1,0 +1,347 @@
+.principal-page {
+  min-height: 100vh;
+  display: flex;
+  background: linear-gradient(135deg, #1e3a5f 0%, #0f172a 50%, #1e293b 100%);
+}
+
+.principal-sidebar {
+  width: 280px;
+  background: rgba(15, 23, 42, 0.9);
+  border-right: 1px solid rgba(148, 163, 184, 0.2);
+  padding: 32px 24px;
+  display: flex;
+  flex-direction: column;
+}
+
+.principal-brand {
+  margin-bottom: 24px;
+}
+
+.principal-nav {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.principal-nav-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 16px;
+  border: none;
+  background: transparent;
+  color: #94a3b8;
+  font-size: 14px;
+  border-radius: 10px;
+  cursor: pointer;
+  transition: all 0.2s;
+  text-align: left;
+  width: 100%;
+}
+
+.principal-nav-item:hover {
+  background: rgba(148, 163, 184, 0.1);
+  color: #e2e8f0;
+}
+
+.principal-nav-item.active {
+  background: rgba(59, 130, 246, 0.2);
+  color: #93c5fd;
+}
+
+.principal-badge {
+  padding: 2px 8px;
+  border-radius: 999px;
+  font-size: 11px;
+  font-weight: 600;
+  background: rgba(59, 130, 246, 0.4);
+  color: #fff;
+}
+
+.principal-badge-approved {
+  background: rgba(34, 197, 94, 0.4);
+}
+
+.principal-badge-denied {
+  background: rgba(239, 68, 68, 0.4);
+}
+
+.principal-icon {
+  font-size: 40px;
+  display: block;
+  margin-bottom: 12px;
+}
+
+.principal-brand h2 {
+  font-size: 22px;
+  font-weight: 700;
+  color: #f8fafc;
+  margin-bottom: 4px;
+}
+
+.principal-brand p {
+  font-size: 13px;
+  color: #94a3b8;
+}
+
+.principal-logout {
+  padding: 10px 16px;
+  border-radius: 10px;
+  border: 1px solid rgba(239, 68, 68, 0.3);
+  background: rgba(239, 68, 68, 0.15);
+  color: #fca5a5;
+  font-size: 14px;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.principal-logout:hover {
+  background: rgba(239, 68, 68, 0.25);
+}
+
+.principal-main {
+  flex: 1;
+  padding: 32px 40px 48px;
+  overflow-y: auto;
+}
+
+.principal-header {
+  margin-bottom: 32px;
+}
+
+.principal-header h1 {
+  font-size: 26px;
+  font-weight: 600;
+  color: #f8fafc;
+  margin-bottom: 8px;
+}
+
+.principal-header p {
+  font-size: 15px;
+  color: #94a3b8;
+}
+
+.principal-loading {
+  color: #94a3b8;
+  font-size: 15px;
+}
+
+.principal-empty {
+  text-align: center;
+  padding: 64px 24px;
+  background: rgba(30, 41, 59, 0.5);
+  border: 1px solid rgba(148, 163, 184, 0.15);
+  border-radius: 20px;
+}
+
+.principal-empty-icon {
+  font-size: 56px;
+  display: block;
+  margin-bottom: 16px;
+}
+
+.principal-empty h3 {
+  font-size: 20px;
+  font-weight: 600;
+  color: #f8fafc;
+  margin-bottom: 8px;
+}
+
+.principal-empty p {
+  color: #94a3b8;
+  font-size: 15px;
+}
+
+.principal-list {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.principal-card {
+  background: rgba(30, 41, 59, 0.7);
+  border: 1px solid rgba(148, 163, 184, 0.2);
+  border-radius: 16px;
+  padding: 24px;
+  transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.principal-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.3);
+}
+
+.principal-card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 16px;
+  margin-bottom: 12px;
+}
+
+.principal-card-header h3 {
+  font-size: 18px;
+  font-weight: 600;
+  color: #f8fafc;
+  flex: 1;
+}
+
+.principal-chip {
+  padding: 6px 12px;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 500;
+}
+
+.principal-chip-pending {
+  background: rgba(59, 130, 246, 0.25);
+  color: #93c5fd;
+}
+
+.principal-chip-approved {
+  background: rgba(34, 197, 94, 0.25);
+  color: #86efac;
+}
+
+.principal-chip-denied {
+  background: rgba(239, 68, 68, 0.25);
+  color: #fca5a5;
+}
+
+.principal-chip-default {
+  background: rgba(148, 163, 184, 0.2);
+  color: #94a3b8;
+}
+
+.principal-rejection {
+  display: block;
+  margin-top: 4px;
+  color: #fca5a5;
+  font-style: italic;
+}
+
+.principal-message {
+  font-size: 14px;
+  color: #cbd5e1;
+  margin-bottom: 12px;
+  line-height: 1.5;
+}
+
+.principal-file-link {
+  display: inline-block;
+  padding: 8px 12px;
+  background: rgba(59, 130, 246, 0.15);
+  border-radius: 8px;
+  color: #60a5fa;
+  font-size: 13px;
+  text-decoration: none;
+  margin-bottom: 16px;
+}
+
+.principal-file-link:hover {
+  background: rgba(59, 130, 246, 0.25);
+}
+
+.principal-card-footer {
+  padding-top: 16px;
+  border-top: 1px solid rgba(148, 163, 184, 0.1);
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  align-items: center;
+  gap: 16px;
+}
+
+.principal-meta {
+  font-size: 12px;
+  color: #64748b;
+}
+
+.principal-actions {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+}
+
+.principal-btn {
+  padding: 8px 16px;
+  border-radius: 10px;
+  border: none;
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: opacity 0.2s;
+}
+
+.principal-btn-approve {
+  background: linear-gradient(90deg, #22c55e, #16a34a);
+  color: #fff;
+}
+
+.principal-btn-approve:hover {
+  opacity: 0.9;
+}
+
+.principal-btn-reject {
+  background: rgba(239, 68, 68, 0.2);
+  color: #fca5a5;
+  border: 1px solid rgba(239, 68, 68, 0.4);
+}
+
+.principal-btn-reject:hover {
+  background: rgba(239, 68, 68, 0.35);
+}
+
+.principal-reject-form {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  align-items: flex-end;
+}
+
+.principal-reject-input {
+  width: 280px;
+  padding: 8px 12px;
+  border-radius: 8px;
+  border: 1px solid rgba(148, 163, 184, 0.3);
+  background: rgba(15, 23, 42, 0.6);
+  color: #f8fafc;
+  font-size: 13px;
+}
+
+.principal-reject-input::placeholder {
+  color: #64748b;
+}
+
+.principal-btn-send {
+  background: rgba(239, 68, 68, 0.3);
+  color: #fecaca;
+}
+
+.principal-btn-cancel {
+  background: transparent;
+  color: #94a3b8;
+  margin-left: 8px;
+}
+
+@media (max-width: 768px) {
+  .principal-sidebar {
+    width: 100%;
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+  }
+
+  .principal-brand {
+    margin-bottom: 0;
+  }
+
+  .principal-main {
+    padding: 24px 20px;
+  }
+
+  .principal-page {
+    flex-direction: column;
+  }
+}

@@ -1,7 +1,10 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../../context/AuthContext";
+import api from "../../api/axios";
 import "./AdminDashboard.css";
+
+const API_BASE = "http://localhost:5000";
 
 export default function AdminDashboard() {
   const [timetableTitle, setTimetableTitle] = useState("");
@@ -13,12 +16,17 @@ export default function AdminDashboard() {
   const [resultFile, setResultFile] = useState(null);
   const [circularTitle, setCircularTitle] = useState("");
   const [circularMessage, setCircularMessage] = useState("");
-  const [approvalStage, setApprovalStage] = useState("DRAFT"); // DRAFT | PRINCIPAL | HOD | APPROVED
+  const [circularFile, setCircularFile] = useState(null);
+  const [circulars, setCirculars] = useState([]);
+  const [principals, setPrincipals] = useState([]);
+  const [principalsLoading, setPrincipalsLoading] = useState(false);
+  const [circularLoading, setCircularLoading] = useState(false);
+  const [principalForm, setPrincipalForm] = useState({ name: "", email: "", password: "" });
+  const [editingPrincipal, setEditingPrincipal] = useState(null);
 
   const { logout } = useAuth();
   const navigate = useNavigate();
 
-  // Simple overview metrics (can be wired to backend later)
   const [metrics] = useState({
     totalExams: 162,
     studentsExamined: 15234,
@@ -26,46 +34,124 @@ export default function AdminDashboard() {
     lastUpdated: "Today, 10:15 AM",
   });
 
-  const [activeTab, setActiveTab] = useState("overview"); // overview | content | account
+  const [activeTab, setActiveTab] = useState("overview");
+  const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
+
+  const loadCirculars = async () => {
+    try {
+      const res = await api.get("/circulars");
+      setCirculars(res.data);
+    } catch (e) {
+      console.error(e);
+    }
+  };
+
+  const loadPrincipals = async () => {
+    setPrincipalsLoading(true);
+    try {
+      const res = await api.get("/principals");
+      setPrincipals(res.data);
+    } catch (e) {
+      console.error(e);
+    } finally {
+      setPrincipalsLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    loadCirculars();
+  }, []);
+
+  useEffect(() => {
+    if (activeTab === "principals") loadPrincipals();
+  }, [activeTab]);
 
   const handleTimetableSubmit = (e) => {
     e.preventDefault();
-    // TODO: integrate with backend API for uploading timetable
     console.log("Timetable saved:", { timetableTitle });
   };
 
   const handleResultsSubmit = (e) => {
     e.preventDefault();
-    // TODO: integrate with backend API for uploading results
     console.log("Results saved:", { resultsTitle });
   };
 
   const handleRevaluationSubmit = (e) => {
     e.preventDefault();
-    // TODO: integrate with backend API for updating revaluation status
     console.log("Revaluation saved:", { revaluationTitle });
   };
 
   const handleAccountSubmit = (e) => {
     e.preventDefault();
-    // TODO: integrate with backend API for updating admin credentials
     console.log("Account update:", { currentPassword, newEmail, newPassword });
   };
 
   const handleResultUpload = (e) => {
     e.preventDefault();
     if (!resultFile) return;
-    // TODO: integrate with backend API for uploading result excel file
     console.log("Result file selected:", resultFile.name);
   };
 
-  const advanceApprovalStage = () => {
-    setApprovalStage((prev) => {
-      if (prev === "DRAFT") return "PRINCIPAL";
-      if (prev === "PRINCIPAL") return "HOD";
-      if (prev === "HOD") return "APPROVED";
-      return "DRAFT";
-    });
+  const handleCircularSubmit = async (e) => {
+    e.preventDefault();
+    if (!circularTitle.trim()) return;
+    setCircularLoading(true);
+    try {
+      const formData = new FormData();
+      formData.append("title", circularTitle);
+      formData.append("message", circularMessage);
+      formData.append("sentTo", JSON.stringify(["PRINCIPAL", "FACULTY"]));
+      if (circularFile) formData.append("file", circularFile);
+
+      await api.post("/circulars", formData);
+      setCircularTitle("");
+      setCircularMessage("");
+      setCircularFile(null);
+      loadCirculars();
+    } catch (err) {
+      const msg = err.response?.data?.message || "Failed to send circular";
+      if (err.response?.status === 403) {
+        alert(`${msg}\n\nPlease log in as Admin (examcontroller@gmail.com) to send circulars to Principal.`);
+      } else {
+        alert(msg);
+      }
+    } finally {
+      setCircularLoading(false);
+    }
+  };
+
+  const handleAddPrincipal = async (e) => {
+    e.preventDefault();
+    if (!principalForm.email.trim()) return;
+    try {
+      await api.post("/principals", principalForm);
+      setPrincipalForm({ name: "", email: "", password: "" });
+      loadPrincipals();
+    } catch (err) {
+      alert(err.response?.data?.message || "Failed to add principal");
+    }
+  };
+
+  const handleUpdatePrincipal = async (e) => {
+    e.preventDefault();
+    if (!editingPrincipal || !editingPrincipal.email.trim()) return;
+    try {
+      await api.put(`/principals/${editingPrincipal._id}`, editingPrincipal);
+      setEditingPrincipal(null);
+      loadPrincipals();
+    } catch (err) {
+      alert(err.response?.data?.message || "Failed to update principal");
+    }
+  };
+
+  const handleDeletePrincipal = async (id) => {
+    if (!confirm("Delete this principal?")) return;
+    try {
+      await api.delete(`/principals/${id}`);
+      loadPrincipals();
+    } catch (err) {
+      alert(err.response?.data?.message || "Failed to delete principal");
+    }
   };
 
   const handleLogout = () => {
@@ -73,115 +159,124 @@ export default function AdminDashboard() {
     navigate("/login");
   };
 
+  const statusLabels = {
+    DRAFT: "Draft",
+    PENDING_PRINCIPAL: "Pending Principal",
+    APPROVED: "Approved",
+    SENT_BACK: "Sent Back",
+  };
+
   return (
-    <div className="admin-page">
-      <header className="admin-header">
-        <div>
-          <h1>Admin Control Panel</h1>
-          <p>
-            Manage examination content and settings shown on the public
-            Controller of Examinations portal.
-          </p>
+    <div className={`admin-page ${sidebarCollapsed ? "sidebar-collapsed" : ""}`}>
+      <aside className="admin-sidebar">
+        <div className="admin-sidebar-brand">
+          <span className="admin-sidebar-icon">🎓</span>
+          <span className="admin-sidebar-title">CoE Admin</span>
         </div>
-        <div className="admin-header-right">
-          <div className="admin-credentials-hint">
-            <span className="admin-credentials-label">Default admin</span>
-            <span>examcontroller@gmail.com / 123456</span>
-          </div>
+        <nav className="admin-sidebar-nav">
           <button
             type="button"
-            className="admin-logout-btn"
-            onClick={handleLogout}
+            className={`admin-nav-item ${activeTab === "overview" ? "active" : ""}`}
+            onClick={() => setActiveTab("overview")}
           >
-            Logout
+            <span className="admin-nav-icon">📊</span>
+            <span>Overview</span>
           </button>
-        </div>
-      </header>
-
-      <section className="admin-summary-cards">
-        <div className="admin-summary-card">
-          <h2>Total Exams</h2>
-          <p className="admin-metric">{metrics.totalExams}</p>
-          <span className="admin-metric-label">Exams conducted</span>
-        </div>
-        <div className="admin-summary-card">
-          <h2>Students Examined</h2>
-          <p className="admin-metric">{metrics.studentsExamined.toLocaleString()}</p>
-          <span className="admin-metric-label">Across all programs</span>
-        </div>
-        <div className="admin-summary-card">
-          <h2>Pending Revaluations</h2>
-          <p className="admin-metric">{metrics.pendingRevaluations}</p>
-          <span className="admin-metric-label">Awaiting processing</span>
-        </div>
-        <div className="admin-summary-card">
-          <h2>Last Updated</h2>
-          <p className="admin-metric-small">{metrics.lastUpdated}</p>
-          <span className="admin-metric-label">System status</span>
-        </div>
-      </section>
-
-      <nav className="admin-tabs">
+          <button
+            type="button"
+            className={`admin-nav-item ${activeTab === "content" ? "active" : ""}`}
+            onClick={() => setActiveTab("content")}
+          >
+            <span className="admin-nav-icon">📁</span>
+            <span>Content</span>
+          </button>
+          <button
+            type="button"
+            className={`admin-nav-item ${activeTab === "circulars" ? "active" : ""}`}
+            onClick={() => setActiveTab("circulars")}
+          >
+            <span className="admin-nav-icon">📢</span>
+            <span>Circulars</span>
+          </button>
+          <button
+            type="button"
+            className={`admin-nav-item ${activeTab === "principals" ? "active" : ""}`}
+            onClick={() => setActiveTab("principals")}
+          >
+            <span className="admin-nav-icon">👤</span>
+            <span>Principals</span>
+          </button>
+          <button
+            type="button"
+            className={`admin-nav-item ${activeTab === "account" ? "active" : ""}`}
+            onClick={() => setActiveTab("account")}
+          >
+            <span className="admin-nav-icon">⚙️</span>
+            <span>Account</span>
+          </button>
+        </nav>
         <button
           type="button"
-          className={`admin-tab ${activeTab === "overview" ? "active" : ""}`}
-          onClick={() => setActiveTab("overview")}
+          className="admin-sidebar-toggle"
+          onClick={() => setSidebarCollapsed(!sidebarCollapsed)}
+          title={sidebarCollapsed ? "Expand" : "Collapse"}
         >
-          Overview
+          {sidebarCollapsed ? "→" : "←"}
         </button>
-        <button
-          type="button"
-          className={`admin-tab ${activeTab === "content" ? "active" : ""}`}
-          onClick={() => setActiveTab("content")}
-        >
-          Student Services Content
-        </button>
-        <button
-          type="button"
-          className={`admin-tab ${activeTab === "account" ? "active" : ""}`}
-          onClick={() => setActiveTab("account")}
-        >
-          Account Settings
-        </button>
-      </nav>
+      </aside>
 
-      <main className="admin-main">
+      <main className="admin-main-wrap">
+        <header className="admin-header">
+          <h1>Admin Control Panel</h1>
+          <div className="admin-header-right">
+            <button type="button" className="admin-logout-btn" onClick={handleLogout}>
+              Logout
+            </button>
+          </div>
+        </header>
+
         {activeTab === "overview" && (
-          <section className="admin-section">
-            <h2>Overview</h2>
-            <p className="admin-section-subtitle">
-              High-level snapshot of examinations, results, and revaluation
-              activity for the current academic year.
-            </p>
+          <section className="admin-section animate-fade">
+            <div className="admin-cards">
+              <div className="admin-card">
+                <div className="admin-card-icon">📝</div>
+                <h3>Total Exams</h3>
+                <p className="admin-card-value">{metrics.totalExams}</p>
+                <span className="admin-card-label">Exams conducted</span>
+              </div>
+              <div className="admin-card">
+                <div className="admin-card-icon">🎓</div>
+                <h3>Students Examined</h3>
+                <p className="admin-card-value">{metrics.studentsExamined.toLocaleString()}</p>
+                <span className="admin-card-label">Across all programs</span>
+              </div>
+              <div className="admin-card">
+                <div className="admin-card-icon">⏳</div>
+                <h3>Pending Revaluations</h3>
+                <p className="admin-card-value">{metrics.pendingRevaluations}</p>
+                <span className="admin-card-label">Awaiting processing</span>
+              </div>
+              <div className="admin-card">
+                <div className="admin-card-icon">🕐</div>
+                <h3>Last Updated</h3>
+                <p className="admin-card-value-sm">{metrics.lastUpdated}</p>
+                <span className="admin-card-label">System status</span>
+              </div>
+            </div>
             <ul className="admin-overview-list">
-              <li>
-                Ensure the latest examination timetable is uploaded before
-                publishing notifications on the public portal.
-              </li>
-              <li>
-                Verify result data before publishing to avoid re-issuance and
-                revaluation spikes.
-              </li>
-              <li>
-                Regularly review revaluation backlogs and communicate timelines
-                through notifications.
-              </li>
+              <li>Upload latest examination timetable before publishing notifications.</li>
+              <li>Verify result data to avoid re-issuance spikes.</li>
+              <li>Manage circulars via Principal approval workflow.</li>
             </ul>
           </section>
         )}
 
         {activeTab === "content" && (
-          <section className="admin-section">
+          <section className="admin-section animate-fade">
             <h2>Student Services & Results</h2>
-            <p className="admin-section-subtitle">
-              Configure what students see in Student Quick Access and upload
-              result data for publication.
-            </p>
-
             <div className="admin-forms-grid">
               <form className="admin-form-card" onSubmit={handleTimetableSubmit}>
                 <h3>Examination Timetable</h3>
-                <p>Set the title or link description used for the timetable.</p>
                 <label>
                   Display title
                   <input
@@ -191,12 +286,10 @@ export default function AdminDashboard() {
                     onChange={(e) => setTimetableTitle(e.target.value)}
                   />
                 </label>
-                <button type="submit">Save timetable</button>
+                <button type="submit">Save</button>
               </form>
-
               <form className="admin-form-card" onSubmit={handleResultsSubmit}>
                 <h3>Examination Results</h3>
-                <p>Update the label or link used for results.</p>
                 <label>
                   Display title
                   <input
@@ -206,12 +299,10 @@ export default function AdminDashboard() {
                     onChange={(e) => setResultsTitle(e.target.value)}
                   />
                 </label>
-                <button type="submit">Save results</button>
+                <button type="submit">Save</button>
               </form>
-
               <form className="admin-form-card" onSubmit={handleRevaluationSubmit}>
                 <h3>Revaluation Status</h3>
-                <p>Control the messaging for revaluation tracking.</p>
                 <label>
                   Display title
                   <input
@@ -221,122 +312,248 @@ export default function AdminDashboard() {
                     onChange={(e) => setRevaluationTitle(e.target.value)}
                   />
                 </label>
-                <button type="submit">Save revaluation</button>
+                <button type="submit">Save</button>
               </form>
-
               <form className="admin-form-card" onSubmit={handleResultUpload}>
                 <h3>Upload Result File</h3>
-                <p>Upload an Excel/CSV file containing examination results.</p>
                 <label>
-                  Result file
+                  Excel/CSV
                   <input
                     type="file"
                     accept=".xlsx,.xls,.csv"
                     onChange={(e) => setResultFile(e.target.files?.[0] || null)}
                   />
                 </label>
-                <button type="submit">Upload results file</button>
+                <button type="submit">Upload</button>
               </form>
             </div>
           </section>
         )}
 
-        {activeTab === "account" && (
-          <section className="admin-section">
-            <h2>Account & Circular Approvals</h2>
+        {activeTab === "circulars" && (
+          <section className="admin-section animate-fade">
+            <h2>Send Circular</h2>
             <p className="admin-section-subtitle">
-              Update admin login credentials and manage circular approval
-              workflow (Principal & HOD).
+              Upload PDF or Word document and send to Principal and faculties.
             </p>
-
-            <form className="admin-account-form" onSubmit={handleAccountSubmit}>
-              <div className="admin-account-grid">
-                <label>
-                  Current password
-                  <input
-                    type="password"
-                    placeholder="Enter current password"
-                    value={currentPassword}
-                    onChange={(e) => setCurrentPassword(e.target.value)}
-                    required
-                  />
-                </label>
-                <label>
-                  New username (email)
-                  <input
-                    type="email"
-                    placeholder="examcontroller@university.ac.in"
-                    value={newEmail}
-                    onChange={(e) => setNewEmail(e.target.value)}
-                  />
-                </label>
-                <label>
-                  New password
-                  <input
-                    type="password"
-                    placeholder="Enter new password"
-                    value={newPassword}
-                    onChange={(e) => setNewPassword(e.target.value)}
-                  />
-                </label>
-              </div>
-
-              <button type="submit" className="admin-account-submit">
-                Save account changes
-              </button>
-            </form>
-
-            <div className="admin-circular-card">
-              <div className="admin-circular-header">
-                <h3>Send Circular & Approvals</h3>
-                <span className={`admin-approval-chip stage-${approvalStage.toLowerCase()}`}>
-                  {approvalStage === "DRAFT" && "Draft"}
-                  {approvalStage === "PRINCIPAL" && "Pending Principal Approval"}
-                  {approvalStage === "HOD" && "Pending HOD Approval"}
-                  {approvalStage === "APPROVED" && "Approved"}
-                </span>
-              </div>
-              <p className="admin-circular-subtitle">
-                Prepare circular text, send for Principal approval, then route to
-                HODs before publishing to students.
-              </p>
+            <form className="admin-circular-form" onSubmit={handleCircularSubmit}>
               <div className="admin-circular-grid">
                 <label>
                   Circular title
                   <input
                     type="text"
-                    placeholder="e.g. End Semester Exam Schedule - Nov 2026"
+                    placeholder="e.g. End Semester Exam Schedule"
                     value={circularTitle}
                     onChange={(e) => setCircularTitle(e.target.value)}
+                    required
                   />
                 </label>
                 <label>
-                  Circular message
+                  Message (optional)
                   <textarea
-                    placeholder="Enter brief circular content to share with stakeholders..."
+                    placeholder="Brief description..."
                     value={circularMessage}
                     onChange={(e) => setCircularMessage(e.target.value)}
                   />
                 </label>
+                <label className="admin-file-label">
+                  Upload PDF or Word (.pdf, .doc, .docx)
+                  <input
+                    type="file"
+                    accept=".pdf,.doc,.docx"
+                    onChange={(e) => setCircularFile(e.target.files?.[0] || null)}
+                  />
+                  {circularFile && (
+                    <span className="admin-file-name">📎 {circularFile.name}</span>
+                  )}
+                </label>
               </div>
-              <div className="admin-circular-actions">
-                <button
-                  type="button"
-                  className="admin-circular-advance"
-                  onClick={advanceApprovalStage}
-                >
-                  {approvalStage === "DRAFT" && "Send to Principal"}
-                  {approvalStage === "PRINCIPAL" && "Approve & send to HOD"}
-                  {approvalStage === "HOD" && "Approve & finalize"}
-                  {approvalStage === "APPROVED" && "Reset to draft"}
-                </button>
-              </div>
+              <button type="submit" className="admin-btn-primary" disabled={circularLoading}>
+                {circularLoading ? "Sending..." : "Send to Principal & Faculties"}
+              </button>
+            </form>
+
+            <h3 className="admin-subsection-title">Recent Circulars</h3>
+            <div className="admin-circular-list">
+              {circulars.length === 0 ? (
+                <p className="admin-empty">No circulars yet.</p>
+              ) : (
+                circulars.map((c) => (
+                  <div key={c._id} className="admin-circular-item">
+                    <div>
+                      <strong>{c.title}</strong>
+                      <span className={`admin-chip admin-chip-${c.status?.toLowerCase().replace("_", "-")}`}>
+                        {statusLabels[c.status] || c.status}
+                      </span>
+                    </div>
+                    <div className="admin-circular-meta">
+                      {c.fileName && (
+                        <a href={`${API_BASE}${c.fileUrl}`} target="_blank" rel="noreferrer">
+                          📄 {c.fileName}
+                        </a>
+                      )}
+                    </div>
+                  </div>
+                ))
+              )}
             </div>
+          </section>
+        )}
+
+        {activeTab === "principals" && (
+          <section className="admin-section animate-fade">
+            <h2>Principal Credentials</h2>
+            <p className="admin-section-subtitle">Add, edit, or remove principal accounts.</p>
+
+            {!editingPrincipal ? (
+              <form className="admin-principal-form" onSubmit={handleAddPrincipal}>
+                <h3>Add Principal</h3>
+                <div className="admin-principal-grid">
+                  <label>
+                    Name
+                    <input
+                      type="text"
+                      placeholder="Principal name"
+                      value={principalForm.name}
+                      onChange={(e) => setPrincipalForm({ ...principalForm, name: e.target.value })}
+                    />
+                  </label>
+                  <label>
+                    Email
+                    <input
+                      type="email"
+                      placeholder="principal@university.ac.in"
+                      value={principalForm.email}
+                      onChange={(e) => setPrincipalForm({ ...principalForm, email: e.target.value })}
+                      required
+                    />
+                  </label>
+                  <label>
+                    Password
+                    <input
+                      type="password"
+                      placeholder="Default: principal123"
+                      value={principalForm.password}
+                      onChange={(e) => setPrincipalForm({ ...principalForm, password: e.target.value })}
+                    />
+                  </label>
+                </div>
+                <button type="submit" className="admin-btn-primary">Add Principal</button>
+              </form>
+            ) : (
+              <form className="admin-principal-form" onSubmit={handleUpdatePrincipal}>
+                <h3>Edit Principal</h3>
+                <div className="admin-principal-grid">
+                  <label>
+                    Name
+                    <input
+                      type="text"
+                      value={editingPrincipal.name}
+                      onChange={(e) => setEditingPrincipal({ ...editingPrincipal, name: e.target.value })}
+                    />
+                  </label>
+                  <label>
+                    Email
+                    <input
+                      type="email"
+                      value={editingPrincipal.email}
+                      onChange={(e) => setEditingPrincipal({ ...editingPrincipal, email: e.target.value })}
+                      required
+                    />
+                  </label>
+                  <label>
+                    New Password (leave blank to keep)
+                    <input
+                      type="password"
+                      placeholder="••••••••"
+                      onChange={(e) => setEditingPrincipal({ ...editingPrincipal, password: e.target.value })}
+                    />
+                  </label>
+                </div>
+                <div className="admin-form-actions">
+                  <button type="submit" className="admin-btn-primary">Save</button>
+                  <button
+                    type="button"
+                    className="admin-btn-secondary"
+                    onClick={() => setEditingPrincipal(null)}
+                  >
+                    Cancel
+                  </button>
+                </div>
+              </form>
+            )}
+
+            <h3 className="admin-subsection-title">Principals</h3>
+            {principalsLoading ? (
+              <p>Loading...</p>
+            ) : (
+              <div className="admin-principal-list">
+                {principals.map((p) => (
+                  <div key={p._id} className="admin-principal-item">
+                    <div>
+                      <strong>{p.name}</strong>
+                      <span className="admin-principal-email">{p.email}</span>
+                    </div>
+                    <div className="admin-principal-actions">
+                      <button
+                        type="button"
+                        className="admin-btn-small"
+                        onClick={() => setEditingPrincipal({ ...p, password: "" })}
+                      >
+                        Edit
+                      </button>
+                      <button
+                        type="button"
+                        className="admin-btn-small admin-btn-danger"
+                        onClick={() => handleDeletePrincipal(p._id)}
+                      >
+                        Delete
+                      </button>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </section>
+        )}
+
+        {activeTab === "account" && (
+          <section className="admin-section animate-fade">
+            <h2>Account Settings</h2>
+            <form className="admin-account-form" onSubmit={handleAccountSubmit}>
+              <label>
+                Current password
+                <input
+                  type="password"
+                  placeholder="Enter current password"
+                  value={currentPassword}
+                  onChange={(e) => setCurrentPassword(e.target.value)}
+                  required
+                />
+              </label>
+              <label>
+                New email
+                <input
+                  type="email"
+                  placeholder="examcontroller@university.ac.in"
+                  value={newEmail}
+                  onChange={(e) => setNewEmail(e.target.value)}
+                />
+              </label>
+              <label>
+                New password
+                <input
+                  type="password"
+                  placeholder="Enter new password"
+                  value={newPassword}
+                  onChange={(e) => setNewPassword(e.target.value)}
+                />
+              </label>
+              <button type="submit" className="admin-btn-primary">Save changes</button>
+            </form>
           </section>
         )}
       </main>
     </div>
   );
 }
-
-

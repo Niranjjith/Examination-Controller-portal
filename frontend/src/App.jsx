@@ -6,6 +6,7 @@ import Login from "./pages/auth/Login";
 import AdminDashboard from "./pages/admin/Dashboard";
 import Exams from "./pages/admin/Exams";
 import CenterDashboard from "./pages/center/Dashboard";
+import PrincipalDashboard from "./pages/principal/Dashboard";
 import ProtectedRoute from "./auth/ProtectedRoute";
 import RoleGuard from "./auth/RoleGuard";
 
@@ -38,6 +39,18 @@ export default function App() {
             <ProtectedRoute>
               <RoleGuard role="ADMIN">
                 <Exams />
+              </RoleGuard>
+            </ProtectedRoute>
+          }
+        />
+
+        {/* Principal */}
+        <Route
+          path="/principal"
+          element={
+            <ProtectedRoute>
+              <RoleGuard role="PRINCIPAL">
+                <PrincipalDashboard />
               </RoleGuard>
             </ProtectedRoute>
           }

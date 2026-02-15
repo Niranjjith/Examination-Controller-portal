@@ -22,6 +22,7 @@ export default function Login() {
       const payload = JSON.parse(atob(res.data.token.split(".")[1]));
 
       if (payload.role === "ADMIN") navigate("/admin");
+      else if (payload.role === "PRINCIPAL") navigate("/principal");
       else if (payload.role === "CENTER") navigate("/center");
       else navigate("/");
     } catch (err) {
